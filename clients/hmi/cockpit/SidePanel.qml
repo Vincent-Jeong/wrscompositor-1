@@ -20,18 +20,35 @@
  * THE SOFTWARE.
  */
 
-#include "qtwaylandivisurface.h"
-#include "qiviwindow.h"
+import QtQuick 2.1
 
-namespace QtWaylandClient {
+Item {
+    id: sidePanel
+    width: parent.width*0.34
+    height: parent.height*0.7
+    z: 50000
 
+    Rectangle {
+        id: panelBackground
+        color: "black"
+        anchors.fill: parent
+    }
 
-    QtWaylandIviSurface::~QtWaylandIviSurface() {
+    SidePanelMedia {
+        id: media
+        visible: true;
+    }
 
+    SidePanelHVAC {
+        id: hvac
+        visible: true;
+        anchors.top: media.bottom
+    }
+
+    function launchWidget(widgetid) {
+        return false;
     }
 
 
-    void QtWaylandIviSurface::ivi_surface_configure(int32_t width, int32_t height) {
-        ((QIVIWindow *) parent())->iviSurfaceConfigure(width, height);
-    }
 }
+

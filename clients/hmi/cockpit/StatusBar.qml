@@ -21,16 +21,14 @@
  */
 import QtQuick 2.1
 import QtGraphicalEffects 1.0
-import "config.js" as Conf
-import "hmi-controller.js" as Control
 
 Item {
     id: statusBar
+    anchors.top: parent.top
     width: parent.width
-    height: parent.height
+    height: parent.height/10
 
     Component.onCompleted: {
-         Control.getInstance().registerObjectItem(statusBar, "StatusBar");
     }
 
     FontLoader { id: tungsten; source: "fonts/Tungsten-Light.otf" }

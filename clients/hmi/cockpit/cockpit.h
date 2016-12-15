@@ -20,32 +20,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef QTWAYLANDIVIAPPLICATION_H
-#define QTWAYLANDIVIAPPLICATION_H
+#ifndef COCKPIT_H
+#define COCKPIT_H
 
-#include <QObject>
+#include <QQuickItem>
+#include <QQuickWidget>
 #include <QApplication>
-#include <QWindow>
-#include <QtWaylandClient>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QtWaylandClient/private/qwaylandintegration_p.h>
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
 #include "qwayland-ivi-application.h"
-#include "qtwaylandivisurface.h"
+#include "qwayland-ivi-controller.h"
+#include "qwaylandivisurface.h"
 
-namespace QtWaylandClient {
-    class QtWaylandIviApplication : public QObject, public QtWayland::ivi_application
-    {
-        Q_OBJECT
-    private:
-        QApplication *mApp;
-    public:
-        QtWaylandIviApplication(QApplication *app);
+#define WRS_IVI_ID_SURFACE_DEFAULT          9
+#define WRS_IVI_ID_SURFACE_NAVIGATION       10
+#define WRS_IVI_ID_SURFACE_DIALOG           11
+#define WRS_IVI_ID_SURFACE_PHONE            12
+#define WRS_IVI_ID_SURFACE_PROJECTION       13
+#define WRS_IVI_ID_SURFACE_CAMERA           14
+#define WRS_IVI_ID_SURFACE_HMI              15
 
-        ~QtWaylandIviApplication();
+class Cockpit : public QQuickWidget 
+{
+public:
+    Cockpit(QWidget* parent = 0);
+    void iviSurfaceConfigure(int width, int height);
+    ~Cockpit();
 
-    public slots:
-    };
-}
+protected:
+   bool event(QEvent *event);
 
+private:
+	static void registryIvi(void *data, struct wl_registry *registry,
+		uint32_t id, const QString &interface, uint32_t version);
+    bool createSurface();
+    
+private:
+    QtWayland::ivi_application *mIviApplication;
+    QtWayland::ivi_controller *mIviController;
+    QtWaylandClient::QWaylandIviSurface *mIviSurface;
+    uint32_t mSurfaceId;
+};
 
-#endif // QTWAYLANDIVIAPPLICATION_H
+#endif

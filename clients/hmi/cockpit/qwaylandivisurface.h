@@ -20,32 +20,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef QIVIWINDOW_H
-#define QIVIWINDOW_H
+#ifndef QWAYLANDIVISURFACE_H
+#define QWAYLANDIVISURFACE_H
 
-#include <QMainWindow>
-#include "qtwaylandiviapplication.h"
+#include <QObject>
+#include <QDebug>
+#include <QtWaylandClient/private/qwaylandwindow_p.h>
+#include "qwayland-ivi-application.h"
+#include "qwayland-ivi-controller.h"
 
-class QIVIWindow : public QMainWindow
+namespace QtWaylandClient {
+
+//class QWaylandWindow;
+//class QWindow;
+
+class QWaylandIviSurface : public QObject, public QtWayland::ivi_surface
+        , public QtWayland::ivi_controller_surface
 {
-    Q_OBJECT
-
 public:
-    int                                         mIviID;
-    QtWaylandClient::QtWaylandIviApplication    *mIviApp;
-    QtWaylandClient::QtWaylandIviSurface        *mIviSurface;
-    QtWaylandClient::QtWaylandIviSurface        *mIviSurfaceInst;
-
-    explicit QIVIWindow(QtWaylandClient::QtWaylandIviApplication *iviApp, int iviId);
-    void repaint();
-    void iviSurfaceConfigure(int w, int h);
-
-signals:
-
-public slots:
-
-protected:
-    bool event(QEvent *event);
+	QWaylandIviSurface(struct ::ivi_surface *ivi_surface);
+    QWaylandIviSurface(struct ::ivi_surface *ivi_surface,
+                       struct ::ivi_controller_surface *iviControllerSurface);
+    virtual ~QWaylandIviSurface();
+private:
+    virtual void ivi_surface_configure(int32_t width, int32_t height) Q_DECL_OVERRIDE;
 };
 
-#endif // QIVIWINDOW_H
+}
+
+#endif // QWAYLANDIVISURFACE_H

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>>wrscompositor.js</file>
+        <file>hmi-controller.js</file>
+        <file>wrscompositor.qml</file>
+    </qresource>
+</RCC>

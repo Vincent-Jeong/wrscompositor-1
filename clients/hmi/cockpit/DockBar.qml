@@ -21,13 +21,13 @@
  */
 
 import QtQuick 2.1
-import "hmi-controller.js" as Control
-import com.windriver.wrscompositor 1.0
 
 Item {
     id: dockbar
+    anchors.bottom: parent.bottom
     width: parent.width
-    height: parent.height
+    height: (parent.height*2)/10
+
 
     FontLoader { id: tungsten; source: "fonts/Tungsten-Light.otf" }
 
@@ -106,20 +106,11 @@ Item {
                 anchors.fill: parent
                 onClicked: {
                     console.log("clicked: " + label);
-                    var mainmenu =  Control.getInstance().findObjectByName("MainMenu");
-
-                    if (appid == 'Applications') {
-                        if (mainmenu.visible) mainmenu.hide()
-                        else mainmenu.show()
-                    } else {
-                        mainmenu.launchNative(appid);
-                    }
                 }
             }
         }
     }
 
     Component.onCompleted: {
-        Control.getInstance().registerObjectItem(dockbar, "DockBar");
     }
 }

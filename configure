@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 
 SUPPOTED_TARGETDEVICES=( x11 minnowmax mrb)
-SUPPOTED_HMIPROFILES=( cockpit classic )
 WRSCOMPOSITOR_PRO=compositor/compositor.pro
 
 show_help() {
@@ -34,10 +33,8 @@ show_help() {
     echo "  --with-digitalcluster       build with digital cluster feature (on 2nd display)"
     echo "  --with-reardisplay          build with rear display feature (on 3rd display)"
     echo "  --without-maindisplay       build without main display"
-    echo "  --enable-webengine          Use WebEngine instead of WebKit for WebRuntime"
     echo "  --enable-vthandler          Use VT Handler to switch Virtual Terminal"
     echo "  --target-device=NAME        Set JS configuration for specific target device"
-    echo "  --hmi-profile=NAME          Set HMI Profile"
     echo "  --overwrite                 overwrite existing config.js by new target/hmi config"
     echo "  --without-qmake             don't execute qmake in configure"
     echo "  --with-qmake=path           set qmake path (e.g - /usr/bin/qmake)"
@@ -47,16 +44,6 @@ show_help() {
     do
         if [ "$name" = "x11" ]; then
             echo "  $name (default for PC dev environment)"
-        else
-            echo "  $name"
-        fi
-    done
-    echo ""
-    echo "Supported HMI profile:"
-    for name in "${SUPPOTED_HMIPROFILES[@]}"
-    do
-        if [ "$name" = "cockpit" ]; then
-            echo "  $name (default for demo)"
         else
             echo "  $name"
         fi
@@ -74,14 +61,10 @@ SUPPORT_MAINDISPLAY=1
 SUPPORT_DCLUSTER=0
 SUPPORT_REARDISPLAY=0
 SUPPORT_WLCOMPOSITOR=1
-SUPPORT_WEBENGINE=0
 SUPPORT_VTHANDLER=0
 SUPPORT_DBUS=1
-SUPPORT_HMI_COCKPIT=0
-SUPPORT_HMI_CLASSIC=0
 MANUAL_QMAKE=0
 TARGET_DEVICE=x11
-HMI_PROFILE=cockpit
 OVERWRITE=0
 QMAKEPATH=
 OPTARGS=""
@@ -92,9 +75,6 @@ for opt do
     case "$opt" in
         --without-maindisplay)
             SUPPORT_MAINDISPLAY=0
-            ;;
-        --enable-webengine)
-            SUPPORT_WEBENGINE=1
             ;;
         --enable-vthandler)
             SUPPORT_VTHANDLER=1
@@ -133,21 +113,6 @@ for opt do
                 exit
             fi
             ;;
-        --hmi-profile=*)
-            for name in "${SUPPOTED_HMIPROFILES[@]}"
-            do
-                if [ $name = $optval ]; then
-                    HMI_PROFILE=$optval
-                    break
-                fi
-            done
-            if [ $optval != $HMI_PROFILE ]; then
-                show_help
-                echo
-                echo "\"$optval\" is not supported HMI Profile"
-                exit
-            fi
-            ;;
         --overwrite)
             OVERWRITE=1
             ;;
@@ -183,24 +148,14 @@ if [ "$QMAKEPATH" = "" ]; then
 fi
 export PATH=`dirname $QMAKEPATH`:$PATH
 
-if [ $HMI_PROFILE = "cockpit" ]; then
-    SUPPORT_HMI_COCKPIT=1
-elif [ $HMI_PROFILE = "classic" ]; then
-    SUPPORT_HMI_CLASSIC=1
-fi
-
 echo "Build configuration"
 echo "  SUPPORT_MAINDISPLAY=$SUPPORT_MAINDISPLAY"
 echo "  SUPPORT_DIGITALCLUSTER=$SUPPORT_DCLUSTER"
 echo "  SUPPORT_REARDISPLAY=$SUPPORT_REARDISPLAY"
 echo "  SUPPORT_WLCOMPOSITOR=$SUPPORT_WLCOMPOSITOR"
-echo "  SUPPORT_WEBENGINE=$SUPPORT_WEBENGINE"
 echo "  SUPPORT_VTHANDLER=$SUPPORT_VTHANDLER"
 echo "  SUPPORT_DBUS=$SUPPORT_DBUS"
-echo "  SUPPORT_HMI_COCKPIT=$SUPPORT_HMI_COCKPIT"
-echo "  SUPPORT_HMI_CLASSIC=$SUPPORT_HMI_CLASSIC"
 echo "  TARGET_DEVICE=$TARGET_DEVICE"
-echo "  HMI_PROFILE=$HMI_PROFILE"
 echo "  OPTARGS: $OPTARGS"
 echo "  PREFIX: $PREFIX"
 echo
@@ -259,12 +214,6 @@ fi
 printf "Generating compositor.pro ..."
 echo "QT += quick qml network gui-private"  > $WRSCOMPOSITOR_PRO
 
-if [ "$SUPPORT_WEBENGINE" = "1" ]; then
-    echo "QT += webengine" >> $WRSCOMPOSITOR_PRO
-else
-    echo "QT += webkitwidgets" >> $WRSCOMPOSITOR_PRO
-fi
-
 if [ "$SUPPORT_WLCOMPOSITOR" = "1" ]; then
     echo "DEFINES += QT_COMPOSITOR_QUICK" >> $WRSCOMPOSITOR_PRO
     echo "QT += compositor" >> $WRSCOMPOSITOR_PRO
@@ -273,6 +222,7 @@ if [ "$SUPPORT_WLCOMPOSITOR" = "1" ]; then
     echo "CONFIG +=wayland-scanner" >> $WRSCOMPOSITOR_PRO
     echo "WAYLANDSERVERSOURCES += protocols/ivi-controller.xml" >> $WRSCOMPOSITOR_PRO
     echo "WAYLANDSERVERSOURCES += protocols/ivi-application.xml" >> $WRSCOMPOSITOR_PRO
+    echo "WAYLANDSERVERSOURCES += protocols/ivi-hmi-controller.xml" >> $WRSCOMPOSITOR_PRO
     echo "CONFIG += link_pkgconfig" >> $WRSCOMPOSITOR_PRO
     echo "PKGCONFIG += wayland-server gbm" >> $WRSCOMPOSITOR_PRO
     echo "HEADERS += wrsivimodel.h wrsivisurface.h wrsivicontroller.h wrsiviapplication.h" >> $WRSCOMPOSITOR_PRO
@@ -310,75 +260,17 @@ cat compositor/config.h.in | sed \
     -e "s/WRSCOMPOSITOR_DIGITALCLUSTER 0/WRSCOMPOSITOR_DIGITALCLUSTER $SUPPORT_DCLUSTER/" \
     -e "s/WRSCOMPOSITOR_REARDISPLAY 0/WRSCOMPOSITOR_REARDISPLAY $SUPPORT_REARDISPLAY/" \
     -e "s/WRSCOMPOSITOR_WAYLAND_COMPOSITOR 0/WRSCOMPOSITOR_WAYLAND_COMPOSITOR $SUPPORT_WLCOMPOSITOR/" \
-    -e "s/WRSCOMPOSITOR_WEBENGINE 0/WRSCOMPOSITOR_WEBENGINE $SUPPORT_WEBENGINE/" \
     -e "s/WRSCOMPOSITOR_VTHANDLER 0/WRSCOMPOSITOR_VTHANDLER $SUPPORT_VTHANDLER/" \
     -e "s/WRSCOMPOSITOR_DBUS 0/WRSCOMPOSITOR_DBUS $SUPPORT_DBUS/" \
     -e "s/DEFAULT_TARGET_DEVICE/$TARGET_DEVICE/" \
-    -e "s/DEFAULT_HMI_PROFILE/$HMI_PROFILE/" \
-    -e "s/WRSCOMPOSITOR_HMI_COCKPIT 0/WRSCOMPOSITOR_HMI_COCKPIT $SUPPORT_HMI_COCKPIT/" \
-    -e "s/WRSCOMPOSITOR_HMI_CLASSIC 0/WRSCOMPOSITOR_HMI_CLASSIC $SUPPORT_HMI_CLASSIC/" \
     > compositor/config.h
 echo $'\r'"Generating config.h for wrscompositor .................................. Done"
-
-printf "Generating config.js for hmi profile ..."
-TARGETDIR="compositor/targets/$TARGET_DEVICE"
-CONFIGJS=compositor/hmi/$HMI_PROFILE/config.js
-if [ -d "$TARGETDIR" ]; then
-    OVERWRITTEN=0
-    if [ -f $CONFIGJS ]; then
-        echo $'\r'"Generating config.js for hmi profile ............... Already Exists"
-        if [ "$OVERWRITE" = "0" ]; then
-            echo "Error, Could not write $CONFIGJS, It's alreay exists"
-            echo "Use --overwrite or remove it first before do configure"
-            exit 1
-        fi
-        OVERWRITTEN=1
-    fi
-    cp -f compositor/config-default.js $CONFIGJS
-    if [ -f "$TARGETDIR/config-opt.js" ]; then
-        cat $TARGETDIR/config-opt.js >> $CONFIGJS
-    fi
-    if [ "$SUPPORT_WEBENGINE" = "1" ]; then
-        echo "useWebEngine = $SUPPORT_WEBENGINE;" >> $CONFIGJS
-    fi
-    if [ "$OVERWRITTEN" = "1" ]; then
-        echo $'\r'"                    overwritten at $CONFIGJS"
-    else
-        echo $'\r'"Generating config.js for hmi profile ......................... Done"
-    fi
-else
-    echo $'\r'"Generating config.js for hmi profile ...................... Failure"
-    echo "Error, not supported target device: $TARGET_DEVICE"
-    exit
-fi
-echo
 
 if [ "$TARGET_DEVICE" = "x11" ]; then
     mkdir -p /usr/share/wrscompositor
     sudo cp clients/mediaplayer/video/*.ogv /usr/share/wrscompositor
-    sudo cp compositor/hmi/$HMI_PROFILE/config.json /usr/share/wrscompositor
     sudo cp compositor/targets/common/etc/dbus-1/system.d/wrscompositor.conf  /etc/dbus-1/system.d/
 fi
-
-printf "Generating hmi-xxx.qrc ..."
-HMI_RC="hmi-$HMI_PROFILE.qrc"
-RCPATH="../../$HMI_RC"
-cd compositor/hmi/$HMI_PROFILE
-echo "<RCC>" > $RCPATH
-echo "  <qresource prefix=\"/\">" >> $RCPATH
-echo "    <file>wrscompositor.js</file>" >> $RCPATH
-echo "    <file>hmi-controller.js</file>" >> $RCPATH
-echo "    <file>wrscompositor.qml</file>" >> $RCPATH
-for name in `find . -name '*.qml' -o -name '*.js' -o -name '*.jpg' -o -name '*.png' -o -name '*.svg' -o -name '*.otf' | sed -e "s/.\///"`
-do
-    echo "    <file alias=\"$name\">hmi/$HMI_PROFILE/$name</file>" >> $RCPATH
-done
-echo "  </qresource>" >> $RCPATH
-echo "</RCC>" >> $RCPATH
-cd ../../..
-echo "RESOURCES += $HMI_RC" >> $WRSCOMPOSITOR_PRO
-echo $'\r'"Generating hmi-xxx.qrc ....................................... Done"
-
 
 printf "Generating vt-handler.pro ..."
 echo "PREFIX=$PREFIX" > vt-handler/vt-handler.pro

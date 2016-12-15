@@ -53,11 +53,6 @@ protected:
     virtual void ivi_application_surface_create(Resource *resource, uint32_t ivi_id, struct ::wl_resource *surface, uint32_t id);
 
 private slots:
-    /**
-     * @brief sizeChanged - callback when QWaylandSurface size is updated
-     *                      notify corresponding IVI surface that size was changed.
-     */
-    void sizeChanged();
 };
 
 #endif // WRSIVIAPPLICATION_H

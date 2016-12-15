@@ -1,0 +1,26 @@
+QT += quickwidgets widgets quick
+QT += waylandclient-private
+CONFIG += wayland-scanner
+
+!contains(QT_CONFIG, no-pkg-config) {
+    PKGCONFIG += wayland-client wayland-cursor
+    CONFIG += link_pkgconfig
+} else {
+    LIBS += -lwayland-client -lwayland-cursor
+}
+
+WAYLANDCLIENTSOURCES += \
+    ../protocol/ivi-application.xml \
+    ../protocol/ivi-controller.xml \
+    ../protocol/ivi-hmi-controller.xml
+
+LOCAL_SOURCES = main.cpp cockpit.cpp
+LOCAL_HEADERS = cockpit.h 
+
+SOURCES += $$LOCAL_SOURCES
+HEADERS += $$LOCAL_HEADERS
+RESOURCES += cockpit.qrc
+
+output.files = cockpit
+output.path = $$PREFIX/bin
+INSTALLS += output

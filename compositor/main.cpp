@@ -27,12 +27,6 @@
 #include <QSettings>
 #include "wrscompositor.h"
 
-#if WRSCOMPOSITOR_WEBENGINE
-#include <QtWebEngine>
-#else
-#include <QtWebKitWidgets>
-#endif
-
 #include "Process.h"
 #include "systemd-util.h"
 //#include "vna_dbusclient.h"
@@ -364,10 +358,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<WrsIVIModel::IVISurface* >("IVISurface*");
     qRegisterMetaType<WrsIVIModel::IVIScreen* >("IVIScreen*");
     qRegisterMetaType<WrsIVIModel::IVIScene* >("IVIScene*");
-#endif
-
-#if WRSCOMPOSITOR_WEBENGINE
-    QtWebEngine::initialize();
 #endif
 
     int i = -1;

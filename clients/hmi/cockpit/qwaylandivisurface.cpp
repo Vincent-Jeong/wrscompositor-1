@@ -20,37 +20,34 @@
  * THE SOFTWARE.
  */
 
-#include <QApplication>
-#include <QPushButton>
+#include "qwaylandivisurface.h"
+#include "cockpit.h"
 
-#include <QWindow>
+namespace QtWaylandClient {
 
-#include "qiviwindow.h"
-#include "qtwaylandiviapplication.h"
-
-
-
-int main(int argc, char **argv)
+QWaylandIviSurface::QWaylandIviSurface(struct ::ivi_surface *ivi_surface)
+    : QtWayland::ivi_surface(ivi_surface)
 {
-    int ivi_id = 0;
-    QApplication app (argc, argv);
-    QtWaylandClient::QtWaylandIviApplication iviApp(&app);
-
-    if (argc > 1) {
-        ivi_id = atoi(argv[1]);
-    }
-
-    printf("IVI_ID: %d\n", ivi_id);
-    QIVIWindow iviWindow(&iviApp, ivi_id);
-    if (ivi_id == 6) {//CAMERA
-        iviWindow.setStyleSheet("background-image: url(./camera.jpg); background-repeat:no-repeat; background-position: center; background-color: black;");
-    }
-    if (ivi_id == 4) {//PHONE
-        iviWindow.setStyleSheet("background-image: url(./phone.jpg); background-repeat:no-repeat; background-position: center; background-color: black;");
-    }
-
-    iviWindow.show();
-
-    return app.exec();
 }
-//https://codereview.qt-project.org/#/c/121297/14
+
+QWaylandIviSurface::QWaylandIviSurface(struct ::ivi_surface *ivi_surface,
+                                       struct ::ivi_controller_surface *iviControllerSurface)
+    : QtWayland::ivi_surface(ivi_surface)
+    , QtWayland::ivi_controller_surface(iviControllerSurface)
+{
+}
+
+QWaylandIviSurface::~QWaylandIviSurface()
+{
+    ivi_surface::destroy();
+    if (QtWayland::ivi_controller_surface::object())
+        QtWayland::ivi_controller_surface::destroy(0);
+}
+
+void QWaylandIviSurface::ivi_surface_configure(int32_t width, int32_t height)
+{
+    qDebug() << " QWaylandIviSurface::ivi_surface_configure, width = " << width << " height = " << height;
+    ((Cockpit *) parent())->iviSurfaceConfigure(width, height);
+}
+
+}

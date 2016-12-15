@@ -21,16 +21,9 @@
  */
 
 import QtQuick 2.1
-import com.windriver.wrscompositor 1.0
-import "config.js" as Conf
-import "hmi-controller.js" as Control
 
 Rectangle {
     id: mainMenu
-    width: parent.width
-    height: parent.height
-    anchors.fill: parent
-    color: "black"
 
     SystemdDbusClient {
         id: systemd_dbusClient
